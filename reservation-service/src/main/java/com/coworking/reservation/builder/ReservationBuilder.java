@@ -2,6 +2,7 @@ package com.coworking.reservation.builder;
 
 import com.coworking.reservation.client.MemberClient;
 import com.coworking.reservation.client.RoomClient;
+import com.coworking.reservation.dto.MemberDTO;
 import com.coworking.reservation.exception.BusinessRuleException;
 import com.coworking.reservation.model.Reservation;
 import com.coworking.reservation.model.ReservationStatus;
@@ -79,7 +80,11 @@ public class ReservationBuilder {
     
     private void validateRoom() {
         try {
-            Map<String, Boolean> roomAvailability = roomClient.checkAvailability(roomId);
+            Map<String, Boolean> roomAvailability = roomClient.checkAvailabilityForTimeSlot(
+                    roomId, 
+                    startDateTime.toString(), 
+                    endDateTime.toString()
+            );
             if (!roomAvailability.get("available")) {
                 throw new BusinessRuleException("Room is not available for the requested time slot");
             }
@@ -95,6 +100,11 @@ public class ReservationBuilder {
             Map<String, Boolean> memberSuspension = memberClient.isSuspended(memberId);
             if (memberSuspension.get("suspended")) {
                 throw new BusinessRuleException("Member is suspended and cannot make reservations");
+            }
+            
+            MemberDTO member = memberClient.getMemberById(memberId);
+            if (member.getActiveReservationsCount() >= member.getMaxConcurrentBookings()) {
+                throw new BusinessRuleException("Member has reached their quota of concurrent reservations");
             }
         } catch (BusinessRuleException e) {
             throw e;
