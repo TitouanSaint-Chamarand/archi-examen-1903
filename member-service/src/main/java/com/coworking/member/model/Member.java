@@ -26,6 +26,9 @@ public class Member {
     @Column(nullable = false)
     private Integer maxConcurrentBookings;
     
+    @Column(nullable = false)
+    private int activeReservationsCount = 0;
+    
     public Member() {
     }
     
@@ -84,5 +87,13 @@ public class Member {
     
     public void setMaxConcurrentBookings(Integer maxConcurrentBookings) {
         this.maxConcurrentBookings = maxConcurrentBookings;
+    }
+    
+    public int getActiveReservationsCount() {
+        return activeReservationsCount;
+    }
+    
+    public void setActiveReservationsCount(int activeReservationsCount) {
+        this.activeReservationsCount = activeReservationsCount;
     }
 }

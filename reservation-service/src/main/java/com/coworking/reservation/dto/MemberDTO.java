@@ -5,14 +5,18 @@ public class MemberDTO {
     private Long id;
     private String fullName;
     private boolean suspended;
+    private Integer maxConcurrentBookings;
+    private int activeReservationsCount;
     
     public MemberDTO() {
     }
     
-    public MemberDTO(Long id, String fullName, boolean suspended) {
+    public MemberDTO(Long id, String fullName, boolean suspended, Integer maxConcurrentBookings, int activeReservationsCount) {
         this.id = id;
         this.fullName = fullName;
         this.suspended = suspended;
+        this.maxConcurrentBookings = maxConcurrentBookings;
+        this.activeReservationsCount = activeReservationsCount;
     }
     
     public Long getId() {
@@ -37,5 +41,21 @@ public class MemberDTO {
     
     public void setSuspended(boolean suspended) {
         this.suspended = suspended;
+    }
+    
+    public Integer getMaxConcurrentBookings() {
+        return maxConcurrentBookings;
+    }
+    
+    public void setMaxConcurrentBookings(Integer maxConcurrentBookings) {
+        this.maxConcurrentBookings = maxConcurrentBookings;
+    }
+    
+    public int getActiveReservationsCount() {
+        return activeReservationsCount;
+    }
+    
+    public void setActiveReservationsCount(int activeReservationsCount) {
+        this.activeReservationsCount = activeReservationsCount;
     }
 }
