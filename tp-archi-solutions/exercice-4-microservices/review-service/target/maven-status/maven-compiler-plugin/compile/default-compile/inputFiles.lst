@@ -1,7 +1,0 @@
-/Users/ihababadi/Desktop/Seanergy /workshop-devsecops-v2/tp-archi-solutions/exercice-4-microservices/review-service/src/main/java/com/ynov/reviewservice/exception/GlobalExceptionHandler.java
-/Users/ihababadi/Desktop/Seanergy /workshop-devsecops-v2/tp-archi-solutions/exercice-4-microservices/review-service/src/main/java/com/ynov/reviewservice/ReviewServiceApplication.java
-/Users/ihababadi/Desktop/Seanergy /workshop-devsecops-v2/tp-archi-solutions/exercice-4-microservices/review-service/src/main/java/com/ynov/reviewservice/model/Review.java
-/Users/ihababadi/Desktop/Seanergy /workshop-devsecops-v2/tp-archi-solutions/exercice-4-microservices/review-service/src/main/java/com/ynov/reviewservice/repository/ReviewRepository.java
-/Users/ihababadi/Desktop/Seanergy /workshop-devsecops-v2/tp-archi-solutions/exercice-4-microservices/review-service/src/main/java/com/ynov/reviewservice/controller/ReviewController.java
-/Users/ihababadi/Desktop/Seanergy /workshop-devsecops-v2/tp-archi-solutions/exercice-4-microservices/review-service/src/main/java/com/ynov/reviewservice/service/ReviewService.java
-/Users/ihababadi/Desktop/Seanergy /workshop-devsecops-v2/tp-archi-solutions/exercice-4-microservices/review-service/src/main/java/com/ynov/reviewservice/exception/ResourceNotFoundException.java

@@ -1,7 +1,0 @@
-/Users/ihababadi/Desktop/Seanergy /workshop-devsecops-v2/tp-archi-solutions/exercice-4-microservices/book-service/src/main/java/com/ynov/bookservice/controller/BookController.java
-/Users/ihababadi/Desktop/Seanergy /workshop-devsecops-v2/tp-archi-solutions/exercice-4-microservices/book-service/src/main/java/com/ynov/bookservice/service/BookService.java
-/Users/ihababadi/Desktop/Seanergy /workshop-devsecops-v2/tp-archi-solutions/exercice-4-microservices/book-service/src/main/java/com/ynov/bookservice/exception/GlobalExceptionHandler.java
-/Users/ihababadi/Desktop/Seanergy /workshop-devsecops-v2/tp-archi-solutions/exercice-4-microservices/book-service/src/main/java/com/ynov/bookservice/repository/BookRepository.java
-/Users/ihababadi/Desktop/Seanergy /workshop-devsecops-v2/tp-archi-solutions/exercice-4-microservices/book-service/src/main/java/com/ynov/bookservice/BookServiceApplication.java
-/Users/ihababadi/Desktop/Seanergy /workshop-devsecops-v2/tp-archi-solutions/exercice-4-microservices/book-service/src/main/java/com/ynov/bookservice/exception/ResourceNotFoundException.java
-/Users/ihababadi/Desktop/Seanergy /workshop-devsecops-v2/tp-archi-solutions/exercice-4-microservices/book-service/src/main/java/com/ynov/bookservice/model/Book.java

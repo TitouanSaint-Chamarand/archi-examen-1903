@@ -1,8 +1,0 @@
-com/ynov/bookservice/controller/BookController.class
-com/ynov/bookservice/exception/ResourceNotFoundException.class
-com/ynov/bookservice/model/Book$Builder.class
-com/ynov/bookservice/BookServiceApplication.class
-com/ynov/bookservice/model/Book.class
-com/ynov/bookservice/service/BookService.class
-com/ynov/bookservice/repository/BookRepository.class
-com/ynov/bookservice/exception/GlobalExceptionHandler.class
