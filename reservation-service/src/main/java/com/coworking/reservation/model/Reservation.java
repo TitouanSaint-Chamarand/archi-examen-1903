@@ -1,5 +1,6 @@
 package com.coworking.reservation.model;
 
+import com.coworking.reservation.state.ReservationState;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -26,6 +27,9 @@ public class Reservation {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ReservationStatus status;
+    
+    @Transient
+    private ReservationState currentState;
     
     public Reservation() {
     }
@@ -85,5 +89,25 @@ public class Reservation {
     
     public void setStatus(ReservationStatus status) {
         this.status = status;
+    }
+    
+    public ReservationState getCurrentState() {
+        return currentState;
+    }
+    
+    public void changeState(ReservationState newState) {
+        this.currentState = newState;
+    }
+    
+    public void cancel() {
+        if (currentState != null) {
+            currentState.cancel(this);
+        }
+    }
+    
+    public void complete() {
+        if (currentState != null) {
+            currentState.complete(this);
+        }
     }
 }
