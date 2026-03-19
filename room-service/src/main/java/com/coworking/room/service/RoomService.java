@@ -1,5 +1,6 @@
 package com.coworking.room.service;
 
+import com.coworking.room.client.ReservationClient;
 import com.coworking.room.event.RoomDeletedEvent;
 import com.coworking.room.event.RoomEventPublisher;
 import com.coworking.room.exception.ResourceNotFoundException;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,6 +23,9 @@ public class RoomService {
     
     @Autowired
     private RoomEventPublisher roomEventPublisher;
+    
+    @Autowired
+    private ReservationClient reservationClient;
     
     public Room create(Room room) {
         return roomRepository.save(room);
@@ -68,6 +73,22 @@ public class RoomService {
         Room room = roomRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + id));
         return room.isAvailable();
+    }
+    
+    public boolean isAvailableForTimeSlot(Long id, LocalDateTime startDateTime, LocalDateTime endDateTime) {
+        Room room = roomRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + id));
+        
+        if (!room.isAvailable()) {
+            return false;
+        }
+        
+        try {
+            Boolean noOverlap = reservationClient.checkOverlap(id, startDateTime.toString(), endDateTime.toString());
+            return noOverlap != null && noOverlap;
+        } catch (Exception e) {
+            return false;
+        }
     }
     
     public void delete(Long id) {

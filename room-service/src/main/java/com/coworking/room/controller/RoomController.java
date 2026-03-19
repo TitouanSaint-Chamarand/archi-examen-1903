@@ -80,6 +80,29 @@ public class RoomController {
         }
     }
     
+    @GetMapping("/{id}/available/timeslot")
+    @Operation(summary = "Vérifier la disponibilité d'une salle pour un créneau horaire", 
+               description = "Vérifie si une salle est disponible pour un créneau horaire spécifique en tenant compte des réservations existantes")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Statut de disponibilité récupéré"),
+        @ApiResponse(responseCode = "404", description = "Salle non trouvée"),
+        @ApiResponse(responseCode = "400", description = "Paramètres invalides")
+    })
+    public ResponseEntity<Map<String, Boolean>> checkAvailabilityForTimeSlot(
+            @PathVariable Long id,
+            @RequestParam String startDateTime,
+            @RequestParam String endDateTime) {
+        try {
+            java.time.LocalDateTime start = java.time.LocalDateTime.parse(startDateTime);
+            java.time.LocalDateTime end = java.time.LocalDateTime.parse(endDateTime);
+            
+            boolean available = roomService.isAvailableForTimeSlot(id, start, end);
+            return ResponseEntity.ok(Map.of("available", available));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("available", false));
+        }
+    }
+    
     @PutMapping("/{id}")
     @Operation(summary = "Mettre à jour une salle", description = "Met à jour les informations d'une salle existante")
     @ApiResponses({

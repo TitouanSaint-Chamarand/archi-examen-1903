@@ -118,4 +118,27 @@ public class ReservationController {
         long count = reservationRepository.countByMemberIdAndStatus(memberId, ReservationStatus.CONFIRMED);
         return ResponseEntity.ok(count);
     }
+    
+    @GetMapping("/check-overlap")
+    @Operation(summary = "Vérifier les chevauchements de créneaux", 
+               description = "Vérifie si un créneau horaire chevauche des réservations confirmées existantes pour une salle donnée")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Résultat de la vérification récupéré")
+    })
+    public ResponseEntity<Boolean> checkOverlap(
+            @RequestParam Long roomId,
+            @RequestParam String startDateTime,
+            @RequestParam String endDateTime) {
+        try {
+            java.time.LocalDateTime start = java.time.LocalDateTime.parse(startDateTime);
+            java.time.LocalDateTime end = java.time.LocalDateTime.parse(endDateTime);
+            
+            List<Reservation> overlapping = reservationRepository.findOverlappingReservations(
+                    roomId, start, end, ReservationStatus.CONFIRMED);
+            
+            return ResponseEntity.ok(overlapping.isEmpty());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(false);
+        }
+    }
 }
