@@ -2,6 +2,9 @@ package com.coworking.reservation.service;
 
 import com.coworking.reservation.client.MemberClient;
 import com.coworking.reservation.client.RoomClient;
+import com.coworking.reservation.event.ReservationCreatedEvent;
+import com.coworking.reservation.event.ReservationEventPublisher;
+import com.coworking.reservation.event.ReservationStatusChangedEvent;
 import com.coworking.reservation.exception.BusinessRuleException;
 import com.coworking.reservation.exception.ResourceNotFoundException;
 import com.coworking.reservation.model.Reservation;
@@ -28,6 +31,9 @@ public class ReservationService {
     @Autowired
     private MemberClient memberClient;
     
+    @Autowired
+    private ReservationEventPublisher reservationEventPublisher;
+    
     public Reservation createReservation(Reservation reservation) {
         try {
             Map<String, Boolean> roomAvailability = roomClient.checkAvailability(reservation.getRoomId());
@@ -48,7 +54,17 @@ public class ReservationService {
         }
         
         reservation.setStatus(ReservationStatus.CONFIRMED);
-        return reservationRepository.save(reservation);
+        Reservation savedReservation = reservationRepository.save(reservation);
+        
+        reservationEventPublisher.publishReservationCreated(new ReservationCreatedEvent(
+                savedReservation.getId(),
+                savedReservation.getMemberId(),
+                savedReservation.getRoomId(),
+                savedReservation.getStartDateTime(),
+                savedReservation.getEndDateTime()
+        ));
+        
+        return savedReservation;
     }
     
     public Optional<Reservation> findById(Long id) {
@@ -75,15 +91,35 @@ public class ReservationService {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + id));
         
+        ReservationStatus previousStatus = reservation.getStatus();
         reservation.setStatus(ReservationStatus.CANCELLED);
-        return reservationRepository.save(reservation);
+        Reservation updatedReservation = reservationRepository.save(reservation);
+        
+        reservationEventPublisher.publishReservationStatusChanged(new ReservationStatusChangedEvent(
+                updatedReservation.getId(),
+                updatedReservation.getMemberId(),
+                previousStatus.name(),
+                ReservationStatus.CANCELLED.name()
+        ));
+        
+        return updatedReservation;
     }
     
     public Reservation completeReservation(Long id) {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + id));
         
+        ReservationStatus previousStatus = reservation.getStatus();
         reservation.setStatus(ReservationStatus.COMPLETED);
-        return reservationRepository.save(reservation);
+        Reservation updatedReservation = reservationRepository.save(reservation);
+        
+        reservationEventPublisher.publishReservationStatusChanged(new ReservationStatusChangedEvent(
+                updatedReservation.getId(),
+                updatedReservation.getMemberId(),
+                previousStatus.name(),
+                ReservationStatus.COMPLETED.name()
+        ));
+        
+        return updatedReservation;
     }
 }

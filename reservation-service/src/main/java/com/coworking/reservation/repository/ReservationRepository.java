@@ -15,4 +15,10 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     List<Reservation> findByMemberId(Long memberId);
     
     List<Reservation> findByStatus(ReservationStatus status);
+    
+    List<Reservation> findByRoomIdAndStatus(Long roomId, ReservationStatus status);
+    
+    List<Reservation> findByMemberIdAndStatus(Long memberId, ReservationStatus status);
+    
+    long countByMemberIdAndStatus(Long memberId, ReservationStatus status);
 }

@@ -1,5 +1,7 @@
 package com.coworking.member.service;
 
+import com.coworking.member.event.MemberDeletedEvent;
+import com.coworking.member.event.MemberEventPublisher;
 import com.coworking.member.exception.ResourceNotFoundException;
 import com.coworking.member.model.Member;
 import com.coworking.member.repository.MemberRepository;
@@ -16,6 +18,9 @@ public class MemberService {
     
     @Autowired
     private MemberRepository memberRepository;
+    
+    @Autowired
+    private MemberEventPublisher memberEventPublisher;
     
     public Member create(Member member) {
         return memberRepository.save(member);
@@ -62,5 +67,6 @@ public class MemberService {
         Member member = memberRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Member not found with id: " + id));
         memberRepository.delete(member);
+        memberEventPublisher.publishMemberDeleted(new MemberDeletedEvent(member.getId(), member.getEmail()));
     }
 }

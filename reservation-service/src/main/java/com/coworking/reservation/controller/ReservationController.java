@@ -1,6 +1,8 @@
 package com.coworking.reservation.controller;
 
 import com.coworking.reservation.model.Reservation;
+import com.coworking.reservation.model.ReservationStatus;
+import com.coworking.reservation.repository.ReservationRepository;
 import com.coworking.reservation.service.ReservationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,6 +17,9 @@ public class ReservationController {
     
     @Autowired
     private ReservationService reservationService;
+    
+    @Autowired
+    private ReservationRepository reservationRepository;
     
     @PostMapping
     public ResponseEntity<?> createReservation(@RequestBody Reservation reservation) {
@@ -67,5 +72,11 @@ public class ReservationController {
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
+    }
+    
+    @GetMapping("/member/{memberId}/active/count")
+    public ResponseEntity<Long> countActiveReservationsForMember(@PathVariable Long memberId) {
+        long count = reservationRepository.countByMemberIdAndStatus(memberId, ReservationStatus.CONFIRMED);
+        return ResponseEntity.ok(count);
     }
 }

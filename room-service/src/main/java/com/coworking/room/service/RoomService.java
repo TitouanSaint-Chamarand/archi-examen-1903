@@ -1,5 +1,7 @@
 package com.coworking.room.service;
 
+import com.coworking.room.event.RoomDeletedEvent;
+import com.coworking.room.event.RoomEventPublisher;
 import com.coworking.room.exception.ResourceNotFoundException;
 import com.coworking.room.model.Room;
 import com.coworking.room.repository.RoomRepository;
@@ -16,6 +18,9 @@ public class RoomService {
     
     @Autowired
     private RoomRepository roomRepository;
+    
+    @Autowired
+    private RoomEventPublisher roomEventPublisher;
     
     public Room create(Room room) {
         return roomRepository.save(room);
@@ -69,5 +74,6 @@ public class RoomService {
         Room room = roomRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + id));
         roomRepository.delete(room);
+        roomEventPublisher.publishRoomDeleted(new RoomDeletedEvent(room.getId(), room.getName(), room.getCity()));
     }
 }
