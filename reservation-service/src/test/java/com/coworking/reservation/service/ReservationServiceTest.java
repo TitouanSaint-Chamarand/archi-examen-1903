@@ -1,12 +1,15 @@
 package com.coworking.reservation.service;
 
+import com.coworking.reservation.builder.ReservationBuilder;
 import com.coworking.reservation.client.MemberClient;
 import com.coworking.reservation.client.RoomClient;
+import com.coworking.reservation.event.ReservationEventPublisher;
 import com.coworking.reservation.exception.BusinessRuleException;
 import com.coworking.reservation.exception.ResourceNotFoundException;
 import com.coworking.reservation.model.Reservation;
 import com.coworking.reservation.model.ReservationStatus;
 import com.coworking.reservation.repository.ReservationRepository;
+import com.coworking.reservation.state.ConfirmedState;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -33,10 +36,13 @@ class ReservationServiceTest {
     private ReservationRepository reservationRepository;
 
     @Mock
-    private RoomClient roomClient;
+    private ReservationBuilder reservationBuilder;
 
     @Mock
-    private MemberClient memberClient;
+    private ReservationEventPublisher eventPublisher;
+
+    @Mock
+    private ConfirmedState confirmedState;
 
     @InjectMocks
     private ReservationService reservationService;
@@ -47,8 +53,8 @@ class ReservationServiceTest {
     void setUp() {
         testReservation = new Reservation(
             1L, 1L,
-            LocalDateTime.now(),
-            LocalDateTime.now().plusHours(2),
+            LocalDateTime.now().plusDays(1),
+            LocalDateTime.now().plusDays(1).plusHours(2),
             ReservationStatus.CONFIRMED
         );
         testReservation.setId(1L);
@@ -57,34 +63,45 @@ class ReservationServiceTest {
     @Test
     @DisplayName("Should create reservation when room available and member not suspended")
     void testCreateReservationSuccess() {
-        Map<String, Boolean> roomAvailability = new HashMap<>();
-        roomAvailability.put("available", true);
+        Reservation requestReservation = new Reservation(
+            1L, 1L,
+            LocalDateTime.now().plusDays(1),
+            LocalDateTime.now().plusDays(1).plusHours(2),
+            ReservationStatus.CONFIRMED
+        );
         
-        Map<String, Boolean> memberSuspension = new HashMap<>();
-        memberSuspension.put("suspended", false);
-        
-        when(roomClient.checkAvailability(1L)).thenReturn(roomAvailability);
-        when(memberClient.isSuspended(1L)).thenReturn(memberSuspension);
+        when(reservationBuilder.withRoomId(1L)).thenReturn(reservationBuilder);
+        when(reservationBuilder.withMemberId(1L)).thenReturn(reservationBuilder);
+        when(reservationBuilder.withTimeSlot(any(LocalDateTime.class), any(LocalDateTime.class))).thenReturn(reservationBuilder);
+        when(reservationBuilder.build()).thenReturn(testReservation);
         when(reservationRepository.save(any(Reservation.class))).thenReturn(testReservation);
 
-        Reservation createdReservation = reservationService.createReservation(testReservation);
+        Reservation createdReservation = reservationService.createReservation(requestReservation);
 
         assertThat(createdReservation).isNotNull();
         assertThat(createdReservation.getStatus()).isEqualTo(ReservationStatus.CONFIRMED);
-        verify(roomClient, times(1)).checkAvailability(1L);
-        verify(memberClient, times(1)).isSuspended(1L);
+        verify(reservationBuilder, times(1)).withRoomId(1L);
+        verify(reservationBuilder, times(1)).withMemberId(1L);
+        verify(reservationBuilder, times(1)).build();
         verify(reservationRepository, times(1)).save(any(Reservation.class));
     }
 
     @Test
     @DisplayName("Should throw exception when room is not available")
     void testCreateReservationRoomUnavailable() {
-        Map<String, Boolean> roomAvailability = new HashMap<>();
-        roomAvailability.put("available", false);
+        Reservation requestReservation = new Reservation(
+            1L, 1L,
+            LocalDateTime.now().plusDays(1),
+            LocalDateTime.now().plusDays(1).plusHours(2),
+            ReservationStatus.CONFIRMED
+        );
         
-        when(roomClient.checkAvailability(1L)).thenReturn(roomAvailability);
+        when(reservationBuilder.withRoomId(1L)).thenReturn(reservationBuilder);
+        when(reservationBuilder.withMemberId(1L)).thenReturn(reservationBuilder);
+        when(reservationBuilder.withTimeSlot(any(LocalDateTime.class), any(LocalDateTime.class))).thenReturn(reservationBuilder);
+        when(reservationBuilder.build()).thenThrow(new BusinessRuleException("Room is not available for the requested time slot"));
 
-        assertThatThrownBy(() -> reservationService.createReservation(testReservation))
+        assertThatThrownBy(() -> reservationService.createReservation(requestReservation))
             .isInstanceOf(BusinessRuleException.class)
             .hasMessageContaining("Room is not available");
     }
@@ -92,16 +109,19 @@ class ReservationServiceTest {
     @Test
     @DisplayName("Should throw exception when member is suspended")
     void testCreateReservationMemberSuspended() {
-        Map<String, Boolean> roomAvailability = new HashMap<>();
-        roomAvailability.put("available", true);
+        Reservation requestReservation = new Reservation(
+            1L, 1L,
+            LocalDateTime.now().plusDays(1),
+            LocalDateTime.now().plusDays(1).plusHours(2),
+            ReservationStatus.CONFIRMED
+        );
         
-        Map<String, Boolean> memberSuspension = new HashMap<>();
-        memberSuspension.put("suspended", true);
-        
-        when(roomClient.checkAvailability(1L)).thenReturn(roomAvailability);
-        when(memberClient.isSuspended(1L)).thenReturn(memberSuspension);
+        when(reservationBuilder.withRoomId(1L)).thenReturn(reservationBuilder);
+        when(reservationBuilder.withMemberId(1L)).thenReturn(reservationBuilder);
+        when(reservationBuilder.withTimeSlot(any(LocalDateTime.class), any(LocalDateTime.class))).thenReturn(reservationBuilder);
+        when(reservationBuilder.build()).thenThrow(new BusinessRuleException("Member is suspended and cannot make reservations"));
 
-        assertThatThrownBy(() -> reservationService.createReservation(testReservation))
+        assertThatThrownBy(() -> reservationService.createReservation(requestReservation))
             .isInstanceOf(BusinessRuleException.class)
             .hasMessageContaining("Member is suspended");
     }
@@ -109,9 +129,19 @@ class ReservationServiceTest {
     @Test
     @DisplayName("Should throw exception when room does not exist")
     void testCreateReservationRoomNotFound() {
-        when(roomClient.checkAvailability(1L)).thenThrow(new RuntimeException("Room not found"));
+        Reservation requestReservation = new Reservation(
+            1L, 1L,
+            LocalDateTime.now().plusDays(1),
+            LocalDateTime.now().plusDays(1).plusHours(2),
+            ReservationStatus.CONFIRMED
+        );
+        
+        when(reservationBuilder.withRoomId(1L)).thenReturn(reservationBuilder);
+        when(reservationBuilder.withMemberId(1L)).thenReturn(reservationBuilder);
+        when(reservationBuilder.withTimeSlot(any(LocalDateTime.class), any(LocalDateTime.class))).thenReturn(reservationBuilder);
+        when(reservationBuilder.build()).thenThrow(new BusinessRuleException("Room not found or unavailable: Room not found"));
 
-        assertThatThrownBy(() -> reservationService.createReservation(testReservation))
+        assertThatThrownBy(() -> reservationService.createReservation(requestReservation))
             .isInstanceOf(BusinessRuleException.class)
             .hasMessageContaining("Room not found or unavailable");
     }
@@ -119,13 +149,19 @@ class ReservationServiceTest {
     @Test
     @DisplayName("Should throw exception when member does not exist")
     void testCreateReservationMemberNotFound() {
-        Map<String, Boolean> roomAvailability = new HashMap<>();
-        roomAvailability.put("available", true);
+        Reservation requestReservation = new Reservation(
+            1L, 1L,
+            LocalDateTime.now().plusDays(1),
+            LocalDateTime.now().plusDays(1).plusHours(2),
+            ReservationStatus.CONFIRMED
+        );
         
-        when(roomClient.checkAvailability(1L)).thenReturn(roomAvailability);
-        when(memberClient.isSuspended(1L)).thenThrow(new RuntimeException("Member not found"));
+        when(reservationBuilder.withRoomId(1L)).thenReturn(reservationBuilder);
+        when(reservationBuilder.withMemberId(1L)).thenReturn(reservationBuilder);
+        when(reservationBuilder.withTimeSlot(any(LocalDateTime.class), any(LocalDateTime.class))).thenReturn(reservationBuilder);
+        when(reservationBuilder.build()).thenThrow(new BusinessRuleException("Member not found or suspended: Member not found"));
 
-        assertThatThrownBy(() -> reservationService.createReservation(testReservation))
+        assertThatThrownBy(() -> reservationService.createReservation(requestReservation))
             .isInstanceOf(BusinessRuleException.class)
             .hasMessageContaining("Member not found or suspended");
     }
@@ -135,6 +171,7 @@ class ReservationServiceTest {
     void testCancelReservation() {
         when(reservationRepository.findById(1L)).thenReturn(Optional.of(testReservation));
         when(reservationRepository.save(any(Reservation.class))).thenReturn(testReservation);
+        testReservation.changeState(confirmedState);
 
         Reservation cancelledReservation = reservationService.cancelReservation(1L);
 
@@ -148,6 +185,7 @@ class ReservationServiceTest {
     void testCompleteReservation() {
         when(reservationRepository.findById(1L)).thenReturn(Optional.of(testReservation));
         when(reservationRepository.save(any(Reservation.class))).thenReturn(testReservation);
+        testReservation.changeState(confirmedState);
 
         Reservation completedReservation = reservationService.completeReservation(1L);
 
