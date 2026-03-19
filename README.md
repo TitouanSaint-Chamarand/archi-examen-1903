@@ -99,6 +99,26 @@ cd reservation-service
 - **Eureka Dashboard** : http://localhost:8761
 - **Config Server** : http://localhost:8888
 
+## Documentation API (Swagger)
+
+Chaque microservice métier expose sa documentation interactive via Swagger UI.
+
+### Accès direct aux services
+
+Après le démarrage des services, accédez à la documentation interactive :
+
+- **Room Service** : http://localhost:8081/swagger-ui.html
+- **Member Service** : http://localhost:8082/swagger-ui.html
+- **Reservation Service** : http://localhost:8083/swagger-ui.html
+
+### API Docs JSON
+
+Les spécifications OpenAPI sont également disponibles au format JSON :
+
+- Room Service : http://localhost:8081/api-docs
+- Member Service : http://localhost:8082/api-docs
+- Reservation Service : http://localhost:8083/api-docs
+
 ## Tests
 
 ### Exécuter tous les tests d'un service
@@ -116,14 +136,6 @@ cd reservation-service
 ```
 
 **Couverture** : 25 tests pour les Design Patterns (Builder + State)
-
-## Documentation API
-
-Chaque microservice expose sa documentation Swagger :
-
-- Room Service : http://localhost:8081/swagger-ui.html
-- Member Service : http://localhost:8082/swagger-ui.html
-- Reservation Service : http://localhost:8083/swagger-ui.html
 
 ## Événements Kafka
 
