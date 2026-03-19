@@ -1,1 +1,9 @@
 .cursor
+
+# Docker volumes
+kafka-data/
+zookeeper-data/
+zookeeper-logs/
+
+Coworking-Platform-Postman-Collection.json
+KAFKA_INTEGRATION.md
